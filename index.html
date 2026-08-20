@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#080c14" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Forge TMS" />
+  <title>Forge TMS Cloud</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" />
+  <style>
+    :root{
+      --bg:#080c14;--surf:#0e1522;--s2:#131b2c;--bd:#1c2940;--fg:#e8eef8;--mut:#8b9bb4;--subtle:#5c6d88;
+      --acc:#4d8dff;--crit:#ef4444;--ok:#10b981;--warn:#f59e0b;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 "IBM Plex Sans",system-ui,sans-serif;min-height:100dvh;-webkit-tap-highlight-color:transparent}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    a{color:var(--acc);text-decoration:none}
+    .wrap{max-width:480px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
+    header.top{display:flex;align-items:center;gap:10px;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top));border-bottom:1px solid var(--bd);background:#060910;position:sticky;top:0;z-index:5}
+    header.top h1{font-size:16px;margin:0;letter-spacing:-.02em}
+    header.top p{margin:0;font-size:11px;color:var(--mut)}
+    .mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(180deg,#4d8dff,#1d4ed8);flex-shrink:0}
+    main{flex:1;padding:16px 16px 96px}
+    .card{background:var(--surf);border:1px solid var(--bd);border-radius:14px;padding:14px;margin:0 0 10px;color:inherit;text-align:left;width:100%;display:block}
+    .big{display:flex;gap:12px;align-items:center;padding:16px;border-radius:16px;border:1px solid var(--bd);background:var(--surf);width:100%;color:var(--fg);text-align:left;margin:0 0 10px}
+    .big.acc{border-color:#4d8dff66;background:#4d8dff14}
+    .ico{width:44px;height:44px;border-radius:12px;background:var(--acc);color:#fff;display:grid;place-items:center;font-weight:700;flex-shrink:0}
+    .badge{font-size:11px;padding:2px 8px;border-radius:999px;background:#0c241c;color:#a7f3d0;border:1px solid #10b98155;white-space:nowrap}
+    .badge.r{background:#2a1216;color:#fecaca;border-color:#ef444455}
+    .badge.w{background:#2a210c;color:#fde68a;border-color:#f59e0b55}
+    .badge.n{background:var(--s2);color:var(--mut);border-color:var(--bd)}
+    .row{display:flex;justify-content:space-between;gap:8px;align-items:center}
+    .btn{background:var(--acc);color:#fff;border:0;border-radius:12px;padding:14px 14px;width:100%;font-weight:600}
+    .btn:disabled{opacity:.45}
+    .btn.g{background:var(--s2);color:var(--fg);border:1px solid var(--bd)}
+    .btn.r{background:#7f1d1d;color:#fecaca}
+    .opt{width:100%;text-align:left;background:var(--s2);border:1px solid var(--bd);color:var(--fg);border-radius:12px;padding:12px;margin:6px 0}
+    .opt.on{border-color:var(--acc);background:#4d8dff22}
+    nav.tab{position:fixed;bottom:0;left:0;right:0;max-width:480px;margin:auto;display:flex;background:#060910f2;border-top:1px solid var(--bd);backdrop-filter:blur(10px);padding-bottom:env(safe-area-inset-bottom);z-index:6}
+    nav.tab button{flex:1;background:none;border:0;color:var(--mut);padding:10px 0 12px;font-size:11px;font-weight:600}
+    nav.tab button.on{color:var(--acc)}
+    input,select{width:100%;background:var(--s2);border:1px solid var(--bd);color:var(--fg);border-radius:10px;padding:12px;margin-top:4px}
+    .muted{color:var(--mut);font-size:13px}
+    .mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px;color:var(--mut)}
+    h2{font-size:20px;margin:6px 0 0;letter-spacing:-.03em}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .kpi{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:10px}
+    .kpi b{display:block;font-size:18px}
+    .search{margin-bottom:12px}
+    .dot{width:8px;height:8px;border-radius:99px;background:var(--ok);display:inline-block;margin-right:6px}
+    .dot.off{background:var(--subtle)}
+  </style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const LOADS=[
+  {id:'987654',lane:'Dallas, TX → Atlanta, GA',eq:'Dry Van',risk:'critical',rate:2450,com:'Packaged foods',miles:1026,wt:42000,pu:'Thu 06:00–14:00 CDT',carrier:'Patriot Trucking',hos:81,ins:'$1M / $100k',note:'HOS BASIC 81st percentile for 14 months. Dispatch blocked — named override required.'},
+  {id:'LD-4419',lane:'Boise, ID → Salt Lake City, UT',eq:'Reefer',risk:'elevated',rate:2140,com:'Fluid milk 34°F',miles:342,wt:42800,pu:'Thu 06:00–09:00 MDT',carrier:'Lupus Logistics',hos:62,ins:'$1M / $250k',note:'Reefer live load. Pulp temp required at pickup.'},
+  {id:'LD-4420',lane:'Twin Falls, ID → Reno, NV',eq:'Flatbed',risk:'critical',rate:3200,com:'Steel coil',miles:531,wt:46500,pu:'Thu 08:30–12:00 MDT',carrier:'Peak Haul',hos:88,ins:'Expired cargo',note:'Cargo policy expired. Blocked until COI on file. You can still push the flatbed workflow.'},
+  {id:'LD-4421',lane:'Pocatello, ID → Portland, OR',eq:'Tanker',risk:'low',rate:4880,com:'Food-grade liquid',miles:782,wt:48000,pu:'Fri 05:00–09:00 MDT',carrier:'Hansen Bulk',hos:22,ins:'$1M / $250k',note:'Cleared to tender. Food-grade wash ticket required.'},
+  {id:'987653',lane:'Houston, TX → Memphis, TN',eq:'Reefer',risk:'elevated',rate:1950,com:'Chilled dairy 34°F',miles:809,wt:38500,pu:'Fri 07:00–15:00 CDT',carrier:'Swift Lane',hos:71,ins:'$1M / $100k',note:'Vehicle maintenance BASIC trending up.'},
+  {id:'L-90381',lane:'Atlanta, GA → Dallas, TX',eq:'Dry Van',risk:'low',rate:2280,com:'Retail freight',miles:1026,wt:44100,pu:'Thu 16:00 CST',carrier:'Atlas Freight',hos:18,ins:'$1M / $250k',note:'In transit. Tracking live.'},
+  {id:'LD-4422',lane:'Denver, CO → Kansas City, MO',eq:'Dry Van',risk:'low',rate:2100,com:'Paper products',miles:605,wt:39000,pu:'Sat 07:00–15:00 MDT',carrier:'Reliable Express',hos:14,ins:'$1M / $100k',note:'Cleared to tender.'},
+  {id:'LD-4424',lane:'Salt Lake City, UT → Phoenix, AZ',eq:'Step Deck',risk:'elevated',rate:3600,com:'Machinery',miles:660,wt:41200,pu:'Fri 08:00–14:00 MDT',carrier:'Highline Heavy',hos:44,ins:'$1M / $250k',note:'Confirm loaded height vs 13′6″.'},
+];
+const WF={
+  'Dry Van':{title:'Dry van pickup',steps:[
+    {t:'checklist',title:'Pre-trip',items:['Tires / lights / brakes','Doors and hinges serviceable','Floor dry, no holes']},
+    {t:'choice',title:'Freight condition',opts:['Piece count matches','Shortage','Visible damage','Overage']},
+    {t:'text',title:'Seal number',ph:'e.g. SL-44821'},
+    {t:'choice',title:'BOL',opts:['Signed BOL','Exception on BOL','Shipper refused']},
+    {t:'confirm',title:'Departing shipper',hint:'Confirms you are rolling with a sealed trailer.'},
+  ]},
+  'Reefer':{title:'Reefer live load',steps:[
+    {t:'checklist',title:'Reefer pre-trip',items:['Reefer fuel ≥ ½ tank','Unit running, no alarm','Bulkhead / air chute clear']},
+    {t:'number',title:'Setpoint °F',ph:'34'},
+    {t:'number',title:'Pulp / product temp °F',ph:'36'},
+    {t:'choice',title:'Reefer mode',opts:['Continuous','Start/stop','Cycle Sentry (approved)']},
+    {t:'text',title:'Seal number',ph:'Seal #'},
+    {t:'confirm',title:'Temp confirmed — rolling'},
+  ]},
+  'Flatbed':{title:'Flatbed securement',steps:[
+    {t:'checklist',title:'Securement',items:['Chains / binders tight','Straps rated and edge-protected','Tarps (if required)','Flags / oversize lights']},
+    {t:'choice',title:'Load type',opts:['Steel / coil','Lumber','Machinery','Other']},
+    {t:'choice',title:'Securement photos',opts:['All four angles captured','Need another shot']},
+    {t:'confirm',title:'Securement complete — rolling'},
+  ]},
+  'Tanker':{title:'Tanker load',steps:[
+    {t:'choice',title:'Wash status',opts:['Food-grade / kosher wash','Chemical wash','Dedicated — no wash']},
+    {t:'text',title:'Last commodity',ph:'e.g. whole milk'},
+    {t:'text',title:'Wash ticket #',ph:'WT-…'},
+    {t:'checklist',title:'Tanker inspection',items:['Dome lids sealed','Discharge valves capped','Interior verified clean']},
+    {t:'confirm',title:'Loaded and sealed — rolling'},
+  ]},
+  'Step Deck':{title:'Step deck',steps:[
+    {t:'number',title:'Loaded height (ft)',ph:'13.4'},
+    {t:'choice',title:'Ramps',opts:['Freight loaded via ramps','Crane / forklift']},
+    {t:'checklist',title:'Chains & permits',items:['Binders tight','Oversize permit (if over 13\'6")','Escort arranged if required']},
+    {t:'confirm',title:'Rolling'},
+  ]},
+};
+const INTS=[
+  ['ADP Workforce Now','HR','on','Driver onboarding, payroll, I-9, CDL'],
+  ['Workday HCM','HR','off','Corporate HRIS'],
+  ['NetSuite ERP','ERP','on','GL, AP/AR, settlement export'],
+  ['Salesforce CRM','CRM','on','Shipper accounts and quotes'],
+  ['Samsara ELD','ELD','on','HOS, pings, DVIR'],
+  ['Motive ELD','ELD','off','Owner-operator ELD'],
+  ['DAT Load Board','Board','on','Postings and rate intel'],
+  ['Truckstop','Board','off','Carrier matching'],
+  ['QuickBooks Online','Acct','off','Invoice push'],
+  ['SAFER / FMCSA','Compliance','on','BASICs, authority, insurance'],
+  ['project44','Tracking','on','Milestone ETAs'],
+  ['Hume.ai Cora','Voice','on','Talk to Cora — navigate, type, tap'],
+];
+
+const store={
+  get(){try{return JSON.parse(localStorage.getItem('forge-phone')||'{}')}catch(e){return {}}},
+  set(p){localStorage.setItem('forge-phone',JSON.stringify({...store.get(),...p}))}
+};
+
+const S={view:'go',load:null,step:0,stage:'dispatch',answers:{},q:'',override:''};
+(function boot(){
+  const h=location.hash.replace('#','');
+  if(h==='driver'||h==='board'||h==='go'||h==='int'||h==='wf') S.view=h;
+  const pushed=store.get().pushed;
+  if(pushed && !S.load) S.load=pushed;
+})();
+
+function go(v,extra){
+  Object.assign(S,extra||{},{view:v});
+  history.replaceState(null,'','#'+(v==='dd'?'board':v));
+  render();
+}
+function money(n){return '$'+Number(n).toLocaleString()}
+function loadBy(id){return LOADS.find(x=>x.id===id)||LOADS[0]}
+function header(title,sub){return `<header class="top"><div class="mark"></div><div><h1>${title}</h1><p>${sub}</p></div></header>`}
+
+function pageGo(){
+  return header('Forge TMS Cloud','Acme Logistics · desk + driver')+`<main>
+    <button class="big" onclick="go('board')"><span class="ico">▦</span><span><b>Dispatch console</b><div class="muted">Load board, due diligence, push workflow</div></span></button>
+    <button class="big acc" onclick="go('driver')"><span class="ico">▣</span><span><b>Driver app</b><div class="muted">Claim a load · equipment interview · Cora</div></span></button>
+    <button class="big" onclick="go('wf')"><span class="ico">☰</span><span><b>Equipment workflows</b><div class="muted">JSON schemas bound per trailer type</div></span></button>
+    <button class="big" onclick="go('int')"><span class="ico">⬡</span><span><b>Integrations</b><div class="muted">ADP · NetSuite · Salesforce · ELD · Hume</div></span></button>
+    <p class="muted" style="margin-top:8px">Bookmark this page. Driver and console share this phone’s memory — push a workflow from the board, then open Driver.</p>
+  </main>`+tabs('go')
+}
+function pageBoard(){
+  const q=S.q.toLowerCase();
+  const rows=LOADS.filter(l=>!q||(l.id+l.lane+l.eq+l.com).toLowerCase().includes(q));
+  return header('Load board','8 loads · live mock')+`<main>
+    <input class="search" placeholder="Search lane, load #, equipment" value="${S.q.replace(/"/g,'')}" oninput="S.q=this.value;render()" />
+    ${rows.map(l=>`<button class="card" onclick='go("dd",{load:${JSON.stringify(l.id)}})'>
+      <div class="row"><span class="mono">${l.id}</span><span class="badge ${l.risk==='critical'?'r':l.risk==='elevated'?'w':''}">${l.risk} · ${l.eq}</span></div>
+      <div style="font-weight:600;margin-top:6px">${l.lane}</div>
+      <div class="muted">${l.com} · ${money(l.rate)} · ${l.miles} mi</div>
+    </button>`).join('')}
+  </main>`+tabs('board')
+}
+function pageDd(){
+  const l=loadBy(S.load);
+  const blocked=l.risk==='critical';
+  return header('Due diligence',l.carrier)+`<main>
+    <div class="card">
+      <div class="row"><span class="mono">${l.id}</span><span class="badge ${blocked?'r':l.risk==='elevated'?'w':''}">${l.risk}</span></div>
+      <h2>${l.lane}</h2>
+      <div class="muted">${l.eq} · ${l.com}</div>
+      <div class="grid2" style="margin-top:10px">
+        <div class="kpi"><span class="muted">Rate</span><b>${money(l.rate)}</b></div>
+        <div class="kpi"><span class="muted">Weight</span><b>${l.wt.toLocaleString()} lb</b></div>
+        <div class="kpi"><span class="muted">HOS BASIC</span><b>${l.hos}%</b></div>
+        <div class="kpi"><span class="muted">Insurance</span><b style="font-size:13px">${l.ins}</b></div>
+      </div>
+      <p class="muted" style="margin-top:10px">${l.note}</p>
+    </div>
+    ${blocked?`<div class="card"><b>Named override</b>
+      <input placeholder="Your name + reason" value="${(S.override||'').replace(/"/g,'')}" oninput="S.override=this.value" />
+      <div style="height:8px"></div>
+      <button class="btn r" onclick="if(!S.override.trim()){alert('Name the override');return}alert('Override recorded. Still push the workflow to the driver.')">Record override</button>
+    </div>`:''}
+    <button class="btn" onclick="pushDriver(${JSON.stringify(l.id)})">Push ${l.eq} workflow to driver</button>
+    <div style="height:8px"></div>
+    <button class="btn g" onclick="go('board')">Back to board</button>
+  </main>`+tabs('board')
+}
+function pushDriver(id){
+  store.set({pushed:id,pushedAt:Date.now()});
+  S.load=id;S.stage='dispatch';S.step=0;S.answers={};
+  go('driver');
+}
+function pageWf(){
+  return header('Workflows','JSON interview schemas')+`<main>
+    ${Object.entries(WF).map(([eq,w])=>`<div class="card"><div class="row"><b>${eq}</b><span class="badge n">${w.steps.length} steps</span></div>
+      <div class="muted">${w.title}</div>
+      <ol class="muted" style="padding-left:18px">${w.steps.map(s=>`<li>${s.title}</li>`).join('')}</ol>
+    </div>`).join('')}
+  </main>`+tabs('wf')
+}
+function pageInt(){
+  return header('Integrations','ADP · ERP · CRM · ELD · Hume')+`<main>
+    ${INTS.map(([n,c,on,b])=>`<div class="card"><div class="row"><span><span class="dot ${on==='on'?'':'off'}"></span><b>${n}</b></span><span class="badge n">${c}</span></div>
+      <div class="muted" style="margin-top:4px">${b} · ${on==='on'?'connected':'not connected'}</div></div>`).join('')}
+  </main>`+tabs('int')
+}
+function pageDriver(){
+  const pushed=store.get().pushed;
+  if(!S.load){
+    return header('Forge Driver','James Merrill · Dallas')+`<main>
+      <div class="card"><b>Claim a load</b><p class="muted">${pushed?'Desk pushed '+pushed+' — tap it below.':'Desk can push one, or pick a load. Equipment type selects the interview schema.'}</p></div>
+      ${LOADS.map(l=>`<button class="opt ${pushed===l.id?'on':''}" onclick='claim(${JSON.stringify(l.id)})'>
+        <div class="row"><span><span class="mono">${l.id}</span><br><b>${l.lane}</b></span><span class="badge">${l.eq}</span></div>
+      </button>`).join('')}
+    </main>`+tabs('driver')
+  }
+  const l=loadBy(S.load); const wf=WF[l.eq]||WF['Dry Van'];
+  if(S.stage==='dispatch'){
+    return header('Manifest',l.id)+`<main>
+      <div class="card">
+        <div class="mono">${l.id}</div>
+        <h2>${l.lane}</h2>
+        <div class="row" style="margin-top:8px"><span class="badge">${l.eq}</span><span>${money(l.rate)}</span></div>
+        <p class="muted">${l.com} · ${l.pu}<br>Workflow: ${wf.title} · ${wf.steps.length} steps from the desk.</p>
+      </div>
+      <button class="btn" onclick="S.stage='pretrip';render()">Start dispatch</button>
+      <div style="height:8px"></div>
+      <button class="btn g" onclick="S.load=null;render()">Release / pick another</button>
+    </main>`+tabs('driver')
+  }
+  if(S.stage==='pretrip'){
+    const items=['Tires','Lights','Brakes','Fifth wheel','Air lines','Horn / wipers'];
+    const ok=items.every((_,i)=>S.answers['p'+i]);
+    return header('Pre-trip DVIR',l.eq)+`<main>
+      ${items.map((it,i)=>`<button class="opt ${S.answers['p'+i]?'on':''}" onclick="S.answers['p'+i]=!S.answers['p'+i];render()">${it} — ${S.answers['p'+i]?'OK':'tap OK'}</button>`).join('')}
+      <button class="btn" ${ok?'':'disabled'} onclick="S.stage='wf';S.step=0;render()">Complete pre-trip</button>
+    </main>`+tabs('driver')
+  }
+  const step=wf.steps[S.step]; const last=S.step>=wf.steps.length-1;
+  let body='';
+  if(step.t==='checklist'){
+    body=step.items.map((it,i)=>{
+      const k='c'+S.step+'-'+i;
+      return `<button class="opt ${S.answers[k]?'on':''}" onclick="S.answers[${JSON.stringify(k)}]=!S.answers[${JSON.stringify(k)}];render()">${it}</button>`;
+    }).join('');
+  } else if(step.t==='choice'){
+    body=step.opts.map(o=>`<button class="opt ${S.answers['s'+S.step]===o?'on':''}" onclick='S.answers["s"+S.step]=${JSON.stringify(o)};render()'>${o}</button>`).join('');
+  } else if(step.t==='text'||step.t==='number'){
+    body=`<input ${step.t==='number'?'inputmode="decimal"':''} placeholder="${step.ph||''}" value="${(S.answers['s'+S.step]||'').replace(/"/g,'')}" oninput="S.answers['s'+S.step]=this.value" />`;
+  } else {
+    body=`<p class="muted">${step.hint||'Confirm to file this step.'}</p><button class="opt on" onclick="S.answers['s'+S.step]='ok';render()">I confirm</button>`;
+  }
+  return header(wf.title,`Step ${S.step+1} / ${wf.steps.length}`)+`<main>
+    <div class="card"><div class="muted">${l.eq} · ${l.id}</div><h2>${step.title}</h2></div>
+    ${body}
+    <div style="height:8px"></div>
+    <button class="btn" onclick="nextStep(${last})">${last?'Complete load — rolling':'Next'}</button>
+    ${S.step?`<div style="height:8px"></div><button class="btn g" onclick="S.step--;render()">Back</button>`:''}
+  </main>`+tabs('driver')
+}
+function nextStep(last){
+  if(last){S.stage='done';render();return}
+  S.step++;render();
+}
+function claim(id){S.load=id;S.stage='dispatch';S.step=0;S.answers={};render()}
+function pageDone(){
+  const l=loadBy(S.load);
+  return header('Rolling',l.lane)+`<main>
+    <div class="card" style="border-color:#10b98166;background:#0c241c">
+      <b>Pickup complete</b>
+      <p class="muted">${l.eq} workflow filed to the load. Pre-trip, seals, and answers are on the audit log.</p>
+    </div>
+    <button class="btn g" onclick="store.set({pushed:null});S.load=null;S.stage='dispatch';S.step=0;S.answers={};go('driver')">Next load</button>
+  </main>`+tabs('driver')
+}
+function tabs(on){
+  return `<nav class="tab">
+    <button class="${on==='go'?'on':''}" onclick="go('go')">Home</button>
+    <button class="${on==='board'?'on':''}" onclick="go('board')">Console</button>
+    <button class="${on==='driver'?'on':''}" onclick="go('driver')">Driver</button>
+    <button class="${on==='int'?'on':''}" onclick="go('int')">Integrations</button>
+  </nav>`
+}
+function render(){
+  const root=document.getElementById('app');
+  const html=S.view==='go'?pageGo():S.view==='board'?pageBoard():S.view==='dd'?pageDd():S.view==='wf'?pageWf():S.view==='int'?pageInt():S.stage==='done'?pageDone():pageDriver();
+  root.innerHTML=html;
+}
+render();
+</script>
+</body>
+</html>
